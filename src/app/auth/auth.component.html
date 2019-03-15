@@ -1,0 +1,17 @@
+<div class="container mt-5">
+  <div class="jumbotron text-center">
+    <ng-container *ngIf="exchangingAccessToken">
+      <div class="spinner-border" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!exchangingAccessToken">
+      <h1 class="display-4">Welcome!</h1>
+      <p class="lead">Please authorize your github account first.</p>
+      <hr class="my-4" />
+      <p class="lead">
+        <a class="btn btn-primary btn-lg" href="{{oauthUri}}" role="button">Authorize</a>
+      </p>
+    </ng-container>
+  </div>
+</div>
