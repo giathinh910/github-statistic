@@ -6,22 +6,26 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  _isAuthenticated = new BehaviorSubject<boolean>(this.hasAccessToken());
+  private isAuthenticated = new BehaviorSubject<boolean>(this.hasAccessToken());
 
   constructor(private clientStorageService: ClientStorageService) {
   }
 
-  get isAuthenticated(): Observable<boolean> {
-    return this._isAuthenticated.asObservable();
+  get isAuthenticated$(): Observable<boolean> {
+    return this.isAuthenticated.asObservable();
+  }
+
+  get accessToken(): string {
+    return this.clientStorageService.getCookie('access_token');
   }
 
   setAuthStatus(value: boolean) {
-    this._isAuthenticated.next(value);
+    this.isAuthenticated.next(value);
   }
 
   logout() {
     this.clientStorageService.removeCookie('access_token');
-    this._isAuthenticated.next(false);
+    this.isAuthenticated.next(false);
     window.location.reload();
   }
 

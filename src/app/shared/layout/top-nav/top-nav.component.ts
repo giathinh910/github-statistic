@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
   styleUrls: ['./top-nav.component.scss']
 })
 export class TopNavComponent {
-  isAuth: Observable<boolean> = this.authService.isAuthenticated;
+  isAuth: Observable<boolean> = this.authService.isAuthenticated$;
 
   constructor(private authService: AuthService) {
   }

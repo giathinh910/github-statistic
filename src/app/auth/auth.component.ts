@@ -12,7 +12,7 @@ import { AuthService } from '../shared/services/auth.service';
   styleUrls: ['./auth.component.scss']
 })
 export class AuthComponent implements OnInit {
-  oauthUri = `https://github.com/login/oauth/authorize?client_id=${environment.clientId}&redirect_uri=${environment.redirectUri}/authenticate`;
+  oauthUri = `https://github.com/login/oauth/authorize?client_id=${environment.clientId}&redirect_uri=${environment.redirectUri}/authenticate&scope=repo`;
   errorMessage: string;
   exchangingAccessToken = false;
 
