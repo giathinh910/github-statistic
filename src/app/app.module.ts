@@ -1,10 +1,18 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { LayoutModule } from './shared/layout/layout.module';
+import { AuthInterceptorService } from './shared/services/auth-interceptor.service';
+
+const interceptors = [
+  {
+    provide: HTTP_INTERCEPTORS,
+    useClass: AuthInterceptorService,
+    multi: true
+  }
+];
 
 @NgModule({
   declarations: [
@@ -16,7 +24,9 @@ import { LayoutModule } from './shared/layout/layout.module';
     HttpClientModule,
     LayoutModule
   ],
-  providers: [],
+  providers: [
+    ...interceptors
+  ],
   bootstrap: [
     AppComponent
   ]
