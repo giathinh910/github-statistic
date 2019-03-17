@@ -176,8 +176,8 @@ export class MemberStatisticComponent implements OnInit {
 
   doesPullRequestBelongToDateRange(pull): boolean {
     const { startDate, endDate } = this.statisticFilterForm.value;
-    const startDateStr = moment(startDate.year + '-' + startDate.month + '-' + startDate.day, 'YYYY-M-D').format('YYYY-MM-DD');
-    const endDateStr = moment(endDate.year + '-' + endDate.month + '-' + endDate.day, 'YYYY-M-D').format('YYYY-MM-DD');
+    const startDateStr = moment(startDate.year + '-' + startDate.month + '-' + startDate.day + '00:00:00', 'YYYY-M-D HH:mm:ss');
+    const endDateStr = moment(endDate.year + '-' + endDate.month + '-' + endDate.day + '23:59:59', 'YYYY-M-D HH:mm:ss');
     return moment(pull.merged_at).isBetween(startDateStr, endDateStr);
   }
 
