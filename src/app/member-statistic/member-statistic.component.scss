@@ -46,3 +46,26 @@ table {
     width: 70px;
   }
 }
+
+.input-calendar {
+  position: relative;
+  .btn-prev-week {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  .btn-next-week {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+  }
+}
+
+.notification-text {
+  background-color: #d7f7da;
+  color: #275624;
+}
+
