@@ -49,18 +49,10 @@ table {
 
 .input-calendar {
   position: relative;
-  .btn-prev-week {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-  }
 
-  .btn-next-week {
-    position: absolute;
-    top: 0;
-    right: 0;
-    z-index: 1;
+  .d-inline-block {
+    margin-right: 1px;
+    vertical-align: top;
   }
 }
 

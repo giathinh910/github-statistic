@@ -8,6 +8,11 @@ import { tap, retryWhen } from 'rxjs/operators';
 })
 export class GithubApiService {
   private githubApiUri = 'https://api.github.com';
+  repoes: {
+    ownerAndRepo: string;
+    pullRequests?: any[];
+    collaborators?: any[];
+  }[] = [];
 
   constructor(private httpClient: HttpClient) {
   }
@@ -43,7 +48,7 @@ export class GithubApiService {
   getRepoPullRequests(ownerAndRepo: string): Observable<any[]> {
     let pageNumber = 1;
     let complete = false;
-    let listPullRequests = [];
+    let pullRequests = [];
     let params = new HttpParams({
       fromObject: {
         per_page: '100',
@@ -51,13 +56,23 @@ export class GithubApiService {
         state: 'all'
       }
     });
+    const repoIndex = this.repoes.findIndex(repo => {
+      return repo.ownerAndRepo === ownerAndRepo;
+    });
+    if (repoIndex > -1) {
+      return of(this.repoes[repoIndex].pullRequests);
+    }
     return defer(() => {
       if(!complete) {
         return this.httpClient.get<any[]>(
           `${this.githubApiUri}/repos/${ownerAndRepo}/pulls`, { params }
         );
       } else {
-        return of(listPullRequests);
+        this.repoes.push({
+          ownerAndRepo,
+          pullRequests
+        }); // cache
+        return of(pullRequests);
       }
     }).pipe(
       tap(response => {
@@ -78,8 +93,8 @@ export class GithubApiService {
         }
       }),
       retryWhen(err => err.pipe(
-        tap(pullRequests => {
-          listPullRequests = listPullRequests.concat(pullRequests);
+        tap(pulls => {
+          pullRequests = pullRequests.concat(pulls);
         })
       ))
     )

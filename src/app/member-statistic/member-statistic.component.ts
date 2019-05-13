@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { concatMap, distinctUntilChanged, finalize, map, tap } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import * as moment from 'moment';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Moment } from 'moment';
@@ -26,8 +26,6 @@ export class MemberStatisticComponent implements OnInit {
   isShowNotiCopyData = false;
   private currentDay = moment();
   private ownerAndRepo: string;
-  private fullListPullRequests: any[];
-  private fullListCollaborators: Observable<any[]>;
 
   constructor(private githubApiService: GithubApiService,
               private activatedRoute: ActivatedRoute,
@@ -41,8 +39,8 @@ export class MemberStatisticComponent implements OnInit {
     this.listenForRepoUrlChange();
   }
 
-  handleGetPullRequestChangeDate() {
-    this.filterPullRequests();
+  handleDateChange() {
+    this.getAllPullRequests();
   }
 
   handleCollaboratorCheckboxChecked() {
@@ -60,14 +58,14 @@ export class MemberStatisticComponent implements OnInit {
     const dayTemp = moment(this.currentDay.subtract(7, "day"));
     this.statisticFilterForm.get('startDate').setValue(this.mondayOfWeek(dayTemp));
     this.statisticFilterForm.get('endDate').setValue(this.sundayOfWeek(dayTemp));
-    this.filterPullRequests();
+    this.getAllPullRequests();
   }
   
   nextWeek() {
     const dayTemp = moment(this.currentDay.add(7, "day"));
     this.statisticFilterForm.get('startDate').setValue(this.mondayOfWeek(dayTemp));
     this.statisticFilterForm.get('endDate').setValue(this.sundayOfWeek(dayTemp));
-    this.filterPullRequests();
+    this.getAllPullRequests();
   }
 
   private mondayOfWeek(currentDay): NgbDateStruct {
@@ -93,7 +91,7 @@ export class MemberStatisticComponent implements OnInit {
         accumulator.push(collaborator.login);
         return accumulator;
       }, []);
-    if (selectedCollaborators.length) {
+    if (selectedCollaborators && selectedCollaborators.length) {
       this.filteredByUserPullRequests = this.pullRequests.filter(pull => {
         return selectedCollaborators.indexOf(pull.user.login) > -1;
       });
@@ -110,8 +108,14 @@ export class MemberStatisticComponent implements OnInit {
     this.isLoadingPullRequests = true;
     this.githubApiService.getRepoPullRequests(this.ownerAndRepo)
       .pipe(
+        map(pulls => pulls.filter(
+          pull => this.doesPullRequestBelongToDateRange(pull)
+        )),
         concatMap((pulls: any[]) => {
           const getCommits$: Observable<any>[] = [];
+          if (!pulls.length) {
+            return of([]);
+          }
           pulls.forEach(
             pull => getCommits$.push(
               this.githubApiService.getRepoPullRequest(this.ownerAndRepo, pull.number)
@@ -122,8 +126,9 @@ export class MemberStatisticComponent implements OnInit {
         finalize(() => this.isLoadingPullRequests = false)
       ).subscribe(
           pulls => {
-            this.fullListPullRequests = pulls;
+            this.pullRequests = pulls;
             this.filterPullRequests();
+            console.log(pulls)
           },
           (err: HttpErrorResponse) => {
             this.errorMessage = err.error.message;
@@ -139,7 +144,6 @@ export class MemberStatisticComponent implements OnInit {
       .subscribe((githubRepoURL: string) => {
         if (githubRepoURL) {
           this.ownerAndRepo = this.parseOwnerAndRepo(this.statisticFilterForm.get('githubRepoURL').value);
-          this.fullListCollaborators = this.githubApiService.getRepoCollaborators(this.ownerAndRepo);
           this.getAllPullRequests();
           this.getCollaborators();
         } else {
@@ -168,7 +172,7 @@ export class MemberStatisticComponent implements OnInit {
     this.errorMessage = undefined;
     this.isLoadingCollaborators = true;
     this.errorMessageCollaborator = '';
-    this.fullListCollaborators
+    this.githubApiService.getRepoCollaborators(this.ownerAndRepo)
       .pipe(
         map(collaborators => {
           return collaborators.map(collaborator => {
@@ -192,17 +196,9 @@ export class MemberStatisticComponent implements OnInit {
   }
 
   private filterPullRequests() {
-    this.filterPullRequestsBySelectedDate();
     this.filterPullRequestsBySelectedCollaborators();
   }
   
-  filterPullRequestsBySelectedDate() {
-    const pulls = this.fullListPullRequests;
-    this.pullRequests = pulls.filter(
-      pull => this.doesPullRequestBelongToDateRange(pull)
-    );
-  }
-
   doesPullRequestBelongToDateRange(pull): boolean {
     const { startDate, endDate } = this.statisticFilterForm.value;
     const startDateStr = moment(startDate.year + '-' + startDate.month + '-' + startDate.day + ' 00:00:00', 'YYYY-M-D HH:mm:ss');
