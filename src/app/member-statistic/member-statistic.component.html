@@ -59,19 +59,13 @@
     <div class="container">
       <div class="mt-3">
         <h3 class="h6 d-block">Filter by date range:</h3>
-        <div class="d-flex justify-content-start">
-          <ng-container *ngIf="isLoadingPullRequests">
-            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-            Loading pull requests ...
-          </ng-container>
-        </div>
-        <div *ngIf="statisticFilterForm.get('githubRepoURL').value.length" class="form-row">
-          <div class="input-calendar col-12 col-md-9">
-            <div class="row">
-              <div class="mb-1 btn-prev-week">
+        <div *ngIf="statisticFilterForm.get('githubRepoURL').value.length" class="row">
+          <div class="col-12 col-md-9">
+            <div class="input-calendar mb-1">
+              <div class="d-inline-block">
                 <button class="btn btn-secondary btn-round" (click)="prevWeek()">Prev Week</button>
               </div>
-              <div class="mb-1 mt-5 mt-md-0 col-12 offset-md-2 col-md-4">
+              <div class="d-inline-block">
                 <div class="input-group">
                   <div class="input-group-prepend">
                     <span class="input-group-text">Start Date</span>
@@ -82,10 +76,10 @@
                           (focus)="d1.toggle()"
                           type="text"
                           class="form-control"
-                          (dateSelect)="handleGetPullRequestChangeDate()">
+                          (dateSelect)="handleDateChange()">
                 </div>
               </div>
-              <div class="mb-1 col-12 col-md-4">
+              <div class="d-inline-block">
                 <div class="input-group">
                   <div class="input-group-prepend">
                     <span class="input-group-text">End Date</span>
@@ -96,16 +90,18 @@
                           (focus)="d2.toggle()"
                           type="text"
                           class="form-control"
-                          (dateSelect)="handleGetPullRequestChangeDate()">
+                          (dateSelect)="handleDateChange()">
                 </div>
               </div>
-              <div class="mb-1 btn-next-week">
+              <div class="d-inline-block">
                 <button class="btn btn-secondary btn-round" (click)="nextWeek()">Next Week</button>
               </div>
             </div>
           </div>
-          <div class="mb-1 d-flex justify-content-end col-12 col-md-3">
-            <button [disabled]="isLoadingPullRequests || !filteredByUserPullRequests.length" class="btn btn-success" (click)="selectAndCopyData()">Select & Copy Data</button>
+          <div class="col-12 col-md-3">
+            <button [disabled]="isLoadingPullRequests || (filteredByUserPullRequests && !filteredByUserPullRequests.length)"
+                    (click)="selectAndCopyData()"
+                    class="btn btn-success">Select & Copy Data</button>
           </div>
         </div>
         <div *ngIf="!statisticFilterForm.get('githubRepoURL').value.length" class="text-muted">
@@ -115,10 +111,19 @@
     </div>
 
     <div class="container-fluid">
-      <p class="text-center notification-text" *ngIf="isShowNotiCopyData">Copied to Clipboard!</p>
-      <p *ngIf="filteredByUserPullRequests && !filteredByUserPullRequests.length">
-        No pull request in this week
-      </p>
+      <div class="container">
+        <p *ngIf="isLoadingPullRequests" class="mt-3 text-muted">
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Loading pull requests ...
+        </p>
+        <p class="notification-text mt-3" *ngIf="isShowNotiCopyData">
+          Copied to Clipboard!
+        </p>
+        <p *ngIf="filteredByUserPullRequests && !filteredByUserPullRequests.length"
+            class="mt-3">
+          No pull request in this week
+        </p>
+      </div>
       <div *ngIf="filteredByUserPullRequests && filteredByUserPullRequests.length" class="table-responsive-sm entry-pulls mt-3">
         <table class="table table-bordered table-sm" id="data-table">
           <thead id="header-data-table">
