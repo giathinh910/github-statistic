@@ -1,10 +1,10 @@
 import { Component, OnInit, SimpleChanges } from '@angular/core';
 import { GithubApiService } from '../shared/services/github-api.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { concatMap, distinctUntilChanged, finalize, map, tap } from 'rxjs/operators';
+import { concatMap, distinctUntilChanged, finalize, map, tap, debounceTime } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import * as moment from 'moment';
-import { forkJoin, Observable, of } from 'rxjs';
+import { forkJoin, Observable, of, fromEvent } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbDateStruct } from '@ng-bootstrap/ng-bootstrap';
 import { Moment } from 'moment';
@@ -40,7 +40,9 @@ export class MemberStatisticComponent implements OnInit {
   }
 
   handleDateChange() {
-    this.getAllPullRequests();
+    const startDateTmp = this.statisticFilterForm.get('startDate').value;
+    const startDateStr = moment(startDateTmp.year + '-' + startDateTmp.month + '-' + startDateTmp.day + ' 00:00:00', 'YYYY-M-D HH:mm:ss');
+    this.currentDay = moment(startDateStr);
   }
 
   handleCollaboratorCheckboxChecked() {
@@ -58,14 +60,12 @@ export class MemberStatisticComponent implements OnInit {
     const dayTemp = moment(this.currentDay.subtract(7, "day"));
     this.statisticFilterForm.get('startDate').setValue(this.mondayOfWeek(dayTemp));
     this.statisticFilterForm.get('endDate').setValue(this.sundayOfWeek(dayTemp));
-    this.getAllPullRequests();
   }
   
   nextWeek() {
     const dayTemp = moment(this.currentDay.add(7, "day"));
     this.statisticFilterForm.get('startDate').setValue(this.mondayOfWeek(dayTemp));
     this.statisticFilterForm.get('endDate').setValue(this.sundayOfWeek(dayTemp));
-    this.getAllPullRequests();
   }
 
   private mondayOfWeek(currentDay): NgbDateStruct {
@@ -115,7 +115,7 @@ export class MemberStatisticComponent implements OnInit {
           const getCommits$: Observable<any>[] = [];
           if (!pulls.length) {
             return of([]);
-          }
+          }          
           pulls.forEach(
             pull => getCommits$.push(
               this.githubApiService.getRepoPullRequest(this.ownerAndRepo, pull.number)
@@ -128,7 +128,6 @@ export class MemberStatisticComponent implements OnInit {
           pulls => {
             this.pullRequests = pulls;
             this.filterPullRequests();
-            console.log(pulls)
           },
           (err: HttpErrorResponse) => {
             this.errorMessage = err.error.message;
@@ -212,6 +211,20 @@ export class MemberStatisticComponent implements OnInit {
       startDate: this.mondayOfWeek(moment()),
       endDate: this.sundayOfWeek(moment()),
       collaborators: this.formBuilder.array([])
+    });
+    this.listenForStartDateChange();
+    this.listenForEndDateChange();
+  }
+
+  private listenForStartDateChange() {
+    this.statisticFilterForm.get('startDate').valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+      this.getAllPullRequests();
+    });
+  }
+
+  private listenForEndDateChange() {
+    this.statisticFilterForm.get('endDate').valueChanges.pipe(debounceTime(300)).subscribe((value) => {
+      this.getAllPullRequests();
     });
   }
 

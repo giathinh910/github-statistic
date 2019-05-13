@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, defer } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { tap, retryWhen } from 'rxjs/operators';
+import { tap, retryWhen, catchError } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -75,6 +75,9 @@ export class GithubApiService {
         return of(pullRequests);
       }
     }).pipe(
+      catchError((err) => {
+        return of(err);
+      }),
       tap(response => {
         if(response.length && !complete) {
           pageNumber++;
