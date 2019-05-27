@@ -8,41 +8,13 @@ import { tap, retryWhen, catchError } from 'rxjs/operators';
 })
 export class GithubApiService {
   private githubApiUri = 'https://api.github.com';
-  repoes: {
+  private repoes: {
     ownerAndRepo: string;
     pullRequests?: any[];
     collaborators?: any[];
   }[] = [];
 
   constructor(private httpClient: HttpClient) {
-  }
-
-  getCurrentUserRepos(page = '1'): Observable<any[]> {
-    return this.httpClient.get<any[]>(
-      `${this.githubApiUri}/users/giathinh910/repos`,
-      {
-        params: new HttpParams({
-          fromObject: {
-            per_page: '100',
-            page
-          }
-        })
-      }
-    );
-  }
-
-  getOrgRepos(page = '1'): Observable<any[]> {
-    return this.httpClient.get<any[]>(
-      `${this.githubApiUri}/orgs/framgia/repos`,
-      {
-        params: new HttpParams({
-          fromObject: {
-            per_page: '100',
-            page
-          }
-        })
-      }
-    );
   }
 
   getRepoPullRequests(ownerAndRepo: string): Observable<any[]> {
@@ -63,7 +35,7 @@ export class GithubApiService {
       return of(this.repoes[repoIndex].pullRequests);
     }
     return defer(() => {
-      if(!complete) {
+      if (!complete) {
         return this.httpClient.get<any[]>(
           `${this.githubApiUri}/repos/${ownerAndRepo}/pulls`, { params }
         );
@@ -79,7 +51,7 @@ export class GithubApiService {
         return of(err);
       }),
       tap(response => {
-        if(response.length && !complete) {
+        if (response.length && !complete) {
           pageNumber++;
           params = new HttpParams({
             fromObject: {
@@ -90,7 +62,7 @@ export class GithubApiService {
           });
           throw response;
         }
-        if(!response.length && !complete) {
+        if (!response.length && !complete) {
           complete = true;
           throw response;
         }
@@ -100,7 +72,7 @@ export class GithubApiService {
           pullRequests = pullRequests.concat(pulls);
         })
       ))
-    )
+    );
   }
 
   getRepoCollaborators(ownerAndRepo: string): Observable<any[]> {
