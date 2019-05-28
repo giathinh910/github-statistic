@@ -69,14 +69,16 @@ export class MemberStatisticComponent implements OnInit {
   }
 
   selectAndCopyData() {
+    this.copyingData = true;
     const elementToSelect = document.getElementById('data-table');
     const range = document.createRange();
     const selection = window.getSelection();
     selection.removeAllRanges();
     range.selectNode(elementToSelect);
     selection.addRange(range);
-    document.execCommand('Copy');
-    this.copyingData = true;
+    setTimeout(() => {
+      document.execCommand('Copy');
+    }, 0);
     setTimeout(() => {
       selection.removeAllRanges();
       this.copyingData = false;
@@ -213,7 +215,7 @@ export class MemberStatisticComponent implements OnInit {
 
   private genForm() {
     this.statisticFilterForm = this.formBuilder.group({
-      githubRepoURL: 'https://github.com/framgia/sun-startup-studio',
+      githubRepoURL: '',
       startDate: this.defaultStartOfWeek,
       endDate: this.defaultEndOfWeek,
       collaborators: this.formBuilder.array([])
