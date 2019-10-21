@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GithubApiService } from '../shared/services/github-api.service';
-import { concatMap, distinctUntilChanged, finalize, map, tap } from 'rxjs/operators';
+import { concatMap, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import * as moment from 'moment';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -15,12 +15,11 @@ import { Moment } from 'moment';
 })
 export class MemberStatisticComponent implements OnInit {
   filteredPullRequests: any[];
-  isLoadingCollaborators = false;
   isLoadingPullRequests = false;
   statisticFilterForm: FormGroup;
   errorMessagePullRequests: string;
-  errorMessageCollaborators: string;
   copyingData = false;
+  collaboratorFilter: string[];
   private ownerAndRepo: string;
 
   constructor(private githubApiService: GithubApiService,
@@ -37,7 +36,7 @@ export class MemberStatisticComponent implements OnInit {
   }
 
   handleCollaboratorCheckboxChecked() {
-    this.getAllPullRequests();
+    this.collaboratorFilter = this.collaborators.value.filter(item => item.selected).map(collaborator => collaborator.login);
   }
 
   get collaborators(): FormArray {
@@ -117,7 +116,6 @@ export class MemberStatisticComponent implements OnInit {
         if (githubRepoURL) {
           this.ownerAndRepo = this.statisticFilterForm.get('githubRepoURL').value.substring(19, githubRepoURL.length);
           this.getAllPullRequests();
-          this.getCollaborators();
         } else {
           this.resetFormAndData();
         }
@@ -154,6 +152,7 @@ export class MemberStatisticComponent implements OnInit {
       ).subscribe(
       pulls => {
         this.filteredPullRequests = pulls.reverse();
+        this.getCollaborators(pulls);
       },
       (err: HttpErrorResponse) => {
         this.errorMessagePullRequests = err.error.message;
@@ -161,35 +160,8 @@ export class MemberStatisticComponent implements OnInit {
     );
   }
 
-  private getCollaborators() {
-    if (this.isLoadingCollaborators) {
-      return;
-    }
-    this.statisticFilterForm.get('githubRepoURL').disable();
-    this.errorMessagePullRequests = undefined;
-    this.isLoadingCollaborators = true;
-    this.errorMessageCollaborators = '';
-    this.githubApiService.getRepoCollaborators(this.ownerAndRepo)
-      .pipe(
-        map(collaborators => {
-          return collaborators.map(collaborator => {
-            collaborator.selected = false;
-            return collaborator;
-          });
-        }),
-        finalize(() => {
-          this.isLoadingCollaborators = false;
-          this.statisticFilterForm.get('githubRepoURL').enable();
-        })
-      )
-      .subscribe(
-        collaborators => {
-          this.genCollaboratorsFormArray(collaborators);
-        },
-        (err: HttpErrorResponse) => {
-          this.errorMessageCollaborators = err.error.message;
-        }
-      );
+  private getCollaborators(pulls: any[]) {
+    this.genCollaboratorsFormArray(pulls);
   }
 
   private doesPullRequestBelongToDateRange(pull): boolean {
@@ -222,15 +194,17 @@ export class MemberStatisticComponent implements OnInit {
     });
   }
 
-  private genCollaboratorsFormArray(collaborators: any[]) {
+  private genCollaboratorsFormArray(pulls: any[]) {
     this.clearCollaboratorsFormArray();
-    collaborators.forEach(collaborator => {
-      const collaboratorFormGroup: FormGroup = this.formBuilder.group({
-        avatar: collaborator.avatar_url,
-        login: collaborator.login,
-        selected: false
-      });
-      this.collaborators.push(collaboratorFormGroup);
+    pulls.forEach(pull => {
+      const collaboratorIndex = this.collaborators.value.findIndex(item => item.login === pull.user.login);
+      if (collaboratorIndex === -1) {
+        const collaboratorFormGroup: FormGroup = this.formBuilder.group({
+          login: pull.user.login,
+          selected: false
+        });
+        this.collaborators.push(collaboratorFormGroup);
+      }
     });
   }
 

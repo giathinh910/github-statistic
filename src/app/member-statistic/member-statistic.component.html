@@ -30,9 +30,6 @@
                  [ngClass]="{'is-active': collaborator.get('selected').value}"
                  class="entry-collaborator">
             <div class="media">
-              <img src="{{collaborator.get('avatar').value}}"
-                   alt="{{collaborator.get('login').value}}"
-                   class="align-self-center mr-3">
               <div class="media-body align-self-center">
                 <input type="checkbox" formControlName="selected" (change)="handleCollaboratorCheckboxChecked()">
                 {{collaborator.get('login').value}}
@@ -40,15 +37,8 @@
             </div>
           </label>
         </div>
-        <div *ngIf="!collaborators.controls.length && !isLoadingCollaborators" class="text-muted">
+        <div *ngIf="!collaborators.controls.length" class="text-muted">
           Please enter a repo URL first
-        </div>
-        <div *ngIf="errorMessageCollaborators" class="text-danger">
-          You do not have permission to view collaborators
-        </div>
-        <div *ngIf="isLoadingCollaborators" class="d-flex align-items-center text-muted">
-          <div class="spinner-border spinner-border-sm mr-2" role="status"></div>
-          Loading collaborators ...
         </div>
       </div>
     </div>
@@ -136,7 +126,7 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let pull of filteredPullRequests">
+          <tr *ngFor="let pull of filteredPullRequests | filterByName: collaboratorFilter">
             <td *ngIf="!copyingData" class="text-center">{{pull.user.login}}</td>
             <td class="text-center"><a href="{{pull.html_url}}" target="_blank">{{pull.html_url}}</a></td>
             <td class="text-center"></td>

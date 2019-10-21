@@ -75,12 +75,6 @@ export class GithubApiService {
     );
   }
 
-  getRepoCollaborators(ownerAndRepo: string): Observable<any[]> {
-    return this.httpClient.get<any[]>(
-      `${this.githubApiUri}/repos/${ownerAndRepo}/collaborators`
-    );
-  }
-
   getRepoPullRequest(ownerAndRepo: string, pullNumber: number): Observable<any[]> {
     return this.httpClient.get<any[]>(
       `${this.githubApiUri}/repos/${ownerAndRepo}/pulls/${pullNumber}`
