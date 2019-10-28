@@ -20,6 +20,7 @@ export class MemberStatisticComponent implements OnInit {
   errorMessagePullRequests: string;
   copyingData = false;
   collaboratorFilter: string[];
+  repoName: string;
   private ownerAndRepo: string;
 
   constructor(private githubApiService: GithubApiService,
@@ -118,6 +119,7 @@ export class MemberStatisticComponent implements OnInit {
       .subscribe((githubRepoURL: string) => {
         if (githubRepoURL) {
           this.ownerAndRepo = this.statisticFilterForm.get('githubRepoURL').value.substring(19, githubRepoURL.length);
+          this.repoName = this.ownerAndRepo.split('/')[1];
           this.getAllPullRequests();
         } else {
           this.resetFormAndData();

@@ -116,18 +116,20 @@
         <table class="table table-bordered table-sm" id="data-table">
           <thead *ngIf="!copyingData">
           <tr>
-            <th *ngIf="!copyingData">Member</th>
-            <th>Issue link</th>
+            <th>Member</th>
+            <th>Repo Name</th>
+            <th>Pull url</th>
             <th class="text-center">Tracker</th>
-            <th class="text-center">Commit Link</th>
-            <th class="text-center">No. Comment</th>
+            <th class="text-center">No. of Commit</th>
+            <th class="text-center">No. of Comment</th>
             <th class="col-line text-center">Line +</th>
             <th class="col-line text-center">Line -</th>
           </tr>
           </thead>
           <tbody>
           <tr *ngFor="let pull of filteredPullRequests | filterByName: collaboratorFilter">
-            <td *ngIf="!copyingData" class="text-center">{{pull.user.login}}</td>
+            <td class="text-center">{{pull.user.login}}</td>
+            <td class="text-center">{{repoName}}</td>
             <td class="text-center"><a href="{{pull.html_url}}" target="_blank">{{pull.html_url}}</a></td>
             <td class="text-center"></td>
             <td class="text-center">{{pull.commits}}</td>
