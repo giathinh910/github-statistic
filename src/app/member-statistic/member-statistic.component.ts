@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GithubApiService } from '../shared/services/github-api.service';
-import { concatMap, distinctUntilChanged, finalize, map } from 'rxjs/operators';
+import { concatMap, distinctUntilChanged, finalize, map, debounceTime } from 'rxjs/operators';
 import { FormArray, FormBuilder, FormGroup } from '@angular/forms';
 import * as moment from 'moment';
 import { forkJoin, Observable, of } from 'rxjs';
@@ -111,7 +111,10 @@ export class MemberStatisticComponent implements OnInit {
     this.statisticFilterForm
       .get('githubRepoURL')
       .valueChanges
-      .pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)))
+      .pipe(
+        debounceTime(200),
+        distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+      )
       .subscribe((githubRepoURL: string) => {
         if (githubRepoURL) {
           this.ownerAndRepo = this.statisticFilterForm.get('githubRepoURL').value.substring(19, githubRepoURL.length);
@@ -148,16 +151,27 @@ export class MemberStatisticComponent implements OnInit {
           );
           return forkJoin(getCommits$);
         }),
+        map(pulls => {
+          return pulls.sort((pullA, pullB) => {
+            if (pullA.user.login > pullB.user.login) {
+              return -1;
+            }
+            if (pullA.user.login < pullB.user.login) {
+              return 1;
+            }
+            return 0;
+          });
+        }),
         finalize(() => this.isLoadingPullRequests = false)
       ).subscribe(
-      pulls => {
-        this.filteredPullRequests = pulls.reverse();
-        this.getCollaborators(pulls);
-      },
-      (err: HttpErrorResponse) => {
-        this.errorMessagePullRequests = err.error.message;
-      }
-    );
+        pulls => {
+          this.filteredPullRequests = pulls.reverse();
+          this.getCollaborators(pulls);
+        },
+        (err: HttpErrorResponse) => {
+          this.errorMessagePullRequests = err.error.message;
+        }
+      );
   }
 
   private getCollaborators(pulls: any[]) {
