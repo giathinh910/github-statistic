@@ -1,20 +1,28 @@
 {
   "name": "fe-github-statistic",
   "version": "0.0.0",
+  "engines": {
+    "node": "10.16.3",
+    "npm": "6.9.0"
+  },
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "node server.js",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "build-prod": "ng build --aot=true --prod=true --sourceMap=false --configuration=production"
+    "build-prod": "ng build --configuration=production",
+    "heroku-postbuild": "ng build --configuration=production"
   },
   "private": true,
   "dependencies": {
+    "@angular-devkit/build-angular": "~0.13.0",
     "@angular/animations": "~7.2.0",
+    "@angular/cli": "~7.3.6",
     "@angular/common": "~7.2.0",
     "@angular/compiler": "~7.2.0",
+    "@angular/compiler-cli": "~7.2.0",
     "@angular/core": "~7.2.0",
     "@angular/forms": "~7.2.0",
     "@angular/platform-browser": "~7.2.0",
@@ -23,11 +31,14 @@
     "@ng-bootstrap/ng-bootstrap": "^4.1.0",
     "bootstrap": "^4.3.1",
     "core-js": "^2.5.4",
+    "express": "^4.17.1",
     "jquery": "^3.4.1",
     "moment": "^2.24.0",
+    "path": "^0.12.7",
     "popper.js": "^1.14.7",
     "rxjs": "~6.3.3",
     "tslib": "^1.9.0",
+    "typescript": "~3.2.2",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
@@ -40,6 +51,7 @@
     "@types/moment": "^2.13.0",
     "@types/node": "~8.9.4",
     "codelyzer": "~4.5.0",
+    "enhanced-resolve": "^4.1.1",
     "jasmine-core": "~2.99.1",
     "jasmine-spec-reporter": "~4.2.1",
     "karma": "~4.0.0",
